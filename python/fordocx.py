@@ -38,3 +38,6 @@ class ForDocx:
 
 
         self.document.save(self.rutaOut)
+
+        def delete():
+            print()
