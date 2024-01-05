@@ -11,9 +11,9 @@ pythonProcess.stdout.on("data", function(data){
   pythonResponse += data.toString()
 })
 
-pythonProcess.stdout.on("end", function(){
-  console.log(pythonResponse)
-})
+
+
+
 
 //Crear bot con el token
 const TelegramBot = require('node-telegram-bot-api');
@@ -45,9 +45,20 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
   bot.on("message", (msg)=>{
 
     const chatId = msg.chat.id;
+
+    pythonResponse = ""
+
     //const resp = msg.text;
-    const resp = pythonResponse
-    bot.sendMessage(chatId, resp);
+    
+    pythonProcess.stdout.on("end", function(){
+      const resp = pythonResponse
+      console.log(pythonResponse)
+      bot.sendMessage(chatId, resp);
+    })
+
+    pythonProcess.stdin.write(msg.text)
+
+    pythonProcess.stdin.end()
   });
 
 bot.onText(RegExp('message'), (msg) => {

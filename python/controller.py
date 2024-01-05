@@ -1,14 +1,20 @@
+import sys
 from fordocx import ForDocx
 
 class Controller:
 
-    def doc():
-        return "hola Kaciel."
+    def __init__(self, data):
+        self.data = data
+
+    def doc(self):
+        return self.data
     
 
 
-x = Controller
+data = sys.stdin.readline()
 
-doc = ForDocx(data = "OFF")
+x = Controller(data = data)
+
+doc = ForDocx(data)
 
 print(x.doc())
