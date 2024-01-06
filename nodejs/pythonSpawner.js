@@ -37,7 +37,7 @@ class PythonSpawner{
         console.log(this.pythonResponse)
         const resp = this.pythonResponse
         //this.bot.sendMessage(this.chatId, this.pythonResponse)  
-        let filePath = path.join(__dirname, resp.substring(0,27))
+        let filePath = path.join(__dirname, resp.substring(0, resp.length-2))
         let hpath = pathToFileURL(filePath)
         //hpath.host = 'localhost'
         console.log(hpath)
