@@ -52,6 +52,17 @@ class PythonSpawner{
                 // For example, you can send an error message to the user
                 this.bot.sendMessage(this.chatId, 'Error sending document. Please try again.');
             })
+        
+        const replyMarkup = {
+            keyboard: [
+                ['Opción 1', 'Opción 2'],
+                ['Opción 3', 'Opción 4']
+            ],
+            resize_keyboard: true,
+            one_time_keyboard: true
+        };
+
+        this.bot.sendMessage(this.chatId, 'Elige', {reply_markup: JSON.stringify(replyMarkup)})
     }
 }
 
