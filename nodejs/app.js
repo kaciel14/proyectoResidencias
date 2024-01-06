@@ -8,7 +8,7 @@ const PythonSpawner = require('./pythonSpawner')
 const TelegramBot = require('node-telegram-bot-api');
 const token = '6566505922:AAFLnqVIM9Y25rn3xqHtpzZdRtZWsoEBCfU';
 
-const bot = new TelegramBot(token, { polling: true });
+const bot = new TelegramBot(token, { polling: true, filepath: true });
 
 
 //Se inicia el servidor. Puerto 3000.
@@ -34,13 +34,8 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
 bot.on("message", (msg)=>{
   const pySpawner = new PythonSpawner(bot, msg.chat.id)
   const chatId = msg.chat.id;
-  if(pySpawner === null){
-    
-    pySpawner.pythonInput(msg.text) 
-  }else{
-    pySpawner.pythonInput(msg.text)
-  }
 
+  pySpawner.pythonInput(msg.text)
 });
 
 bot.onText(RegExp('message'), (msg) => {
