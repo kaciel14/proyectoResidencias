@@ -2,18 +2,7 @@
 var express = require('express');
 const date = require('date-and-time')
 
-const spawn = require('child_process').spawn
-const pythonProcess = spawn("python", ["./../python/controller.py"])
-
-let pythonResponse = ""
-
-pythonProcess.stdout.on("data", function(data){
-  pythonResponse += data.toString()
-})
-
-
-
-
+const PythonSpawner = require('./pythonSpawner')
 
 //Crear bot con el token
 const TelegramBot = require('node-telegram-bot-api');
@@ -28,6 +17,7 @@ app.use(express.json());
 
 app.listen(3000, () => {
   console.log('Wuu!')
+  const pySpawner = null
 });
 
 bot.onText(/\/echo (.+)/, (msg, match) => {
@@ -42,27 +32,22 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
     bot.sendMessage(chatId, resp);
   });
 
-  bot.on("message", (msg)=>{
+bot.on("message", (msg)=>{
 
-    const chatId = msg.chat.id;
+  const chatId = msg.chat.id;
+  if(pySpawner === null){
+    pySpawner = new PythonSpawner(bot, chatId, msg)
+    pySpawner.pythonInput(msg.text)
+    bot.sendMessage(chatId, pySpawner.pythonOutput())
+  }else{
+    pySpawner.pythonInput(msg)
+    bot.sendMessage(chatId, pySpawner.pythonOutput())
+  }
 
-    pythonResponse = ""
-
-    //const resp = msg.text;
-    
-    pythonProcess.stdout.on("end", function(){
-      const resp = pythonResponse
-      console.log(pythonResponse)
-      bot.sendMessage(chatId, resp);
-    })
-
-    pythonProcess.stdin.write(msg.text)
-
-    pythonProcess.stdin.end()
-  });
+});
 
 bot.onText(RegExp('message'), (msg) => {
-    console.log(msg);
-    console.log(msg.chat.id);
+    //console.log(msg);
+    //console.log(msg.chat.id);
 });
   
