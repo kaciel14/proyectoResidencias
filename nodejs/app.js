@@ -17,7 +17,6 @@ app.use(express.json());
 
 app.listen(3000, () => {
   console.log('Wuu!')
-  const pySpawner = null
 });
 
 bot.onText(/\/echo (.+)/, (msg, match) => {
@@ -33,15 +32,13 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
   });
 
 bot.on("message", (msg)=>{
-
+  const pySpawner = new PythonSpawner(bot, msg.chat.id)
   const chatId = msg.chat.id;
   if(pySpawner === null){
-    pySpawner = new PythonSpawner(bot, chatId, msg)
-    pySpawner.pythonInput(msg.text)
-    bot.sendMessage(chatId, pySpawner.pythonOutput())
+    
+    pySpawner.pythonInput(msg.text) 
   }else{
-    pySpawner.pythonInput(msg)
-    bot.sendMessage(chatId, pySpawner.pythonOutput())
+    pySpawner.pythonInput(msg.text)
   }
 
 });

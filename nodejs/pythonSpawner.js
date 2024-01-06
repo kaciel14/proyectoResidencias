@@ -6,30 +6,33 @@ const spawn = require('child_process').spawn
 
 class PythonSpawner{
 
-    constructor(){
+    constructor(bot, chatId){
 
         this.pythonResponse = ""
+        this.bot = bot
+        this.chatId = chatId
 
         this.pythonProcess = spawn("python", ["./../python/controller.py"])
 
-        this.pythonProcess.stdout.on("data", function(data){
-            pythonResponse += data.toString()
+        this.pythonProcess.stdout.on("data", (data) => {
+            this.pythonResponse += data.toString()
         })
         
-        this.pythonProcess.stdout.on("end", function(){
-             this.pythonOutput()
+        this.pythonProcess.stdout.on("end", () =>  {
+            this.pythonOutput()
         })
     }
 
     pythonInput(msgText){
-        pythonProcess.stdin.write(msgText)
-        pythonProcess.stdin.end()
+        console.log(msgText)
+        this.pythonProcess.stdin.write(msgText)
+        this.pythonProcess.stdin.end()
     }
 
     pythonOutput(){
-        console.log(pythonResponse)
-        const resp = pythonResponse
-        return this.pythonResponse   
+        console.log(this.pythonResponse)
+        const resp = this.pythonResponse
+        this.bot.sendMessage(this.chatId, this.pythonResponse)  
     }
 }
 
