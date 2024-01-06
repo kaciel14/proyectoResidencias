@@ -1,11 +1,13 @@
 from docx import Document
-
+from datetime import datetime
 
 class ForDocx:
 
     def __init__(self, data):
         self.rutaIn = './../archivos/plantilla.docx'
-        self.rutaOut = './../archivos/resultado.docx'
+
+        now = datetime.now()
+        self.rutaOut = './../archivos/' + str(now.time()).replace(':', '-') + '.docx'
 
         self.rutaPrueba =  './../archivos/res_reporte1.docx'
 
@@ -38,3 +40,7 @@ class ForDocx:
 
 
         self.document.save(self.rutaOut)
+
+    def getRutaOut(self):
+        return self.rutaOut[2:]
+    

@@ -13,8 +13,8 @@ class Controller:
 
 data = sys.stdin.readline()
 
-x = Controller(data = data)
+x = Controller(data = "lll")
 
 doc = ForDocx(data)
 
-print(x.doc())
+print(doc.getRutaOut())
