@@ -27,10 +27,12 @@ class PythonSpawner{
         })
     }
 
-    pythonInput(msgText){
-        console.log(msgText)
-        this.pythonProcess.stdin.write(msgText)
+    pythonInput(msgText, params, ruta){
+
+        console.log(msgText + " " + params + " " + ruta)
+        this.pythonProcess.stdin.write(msgText+'='+params+"="+ruta)
         this.pythonProcess.stdin.end()
+        
     }
 
     pythonOutput(){

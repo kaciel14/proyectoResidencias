@@ -13,8 +13,10 @@ class Controller:
 
 data = sys.stdin.readline()
 
-x = Controller(data = "lll")
+x = data.split('=')
 
-doc = ForDocx(data)
+#x = Controller(data = "lll")
+
+doc = ForDocx(x[0], x[1], x[2])
 
 print(doc.getRutaOut())

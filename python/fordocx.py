@@ -3,13 +3,15 @@ from datetime import datetime
 
 class ForDocx:
 
-    def __init__(self, data):
-        self.rutaIn = './../archivos/plantilla.docx'
+    def __init__(self, data, params, ruta):
+        #self.rutaIn = './../archivos/plantilla.docx'
 
         now = datetime.now()
         self.rutaOut = './../archivos/' + str(now.time()).replace(':', '-') + '.docx'
 
-        self.rutaPrueba =  './../archivos/res_reporte1.docx'
+        #self.rutaPrueba =  './../archivos/res_reporte1.docx'
+
+        self.rutaPrueba = ruta
 
         self.document = Document(self.rutaPrueba)
 
@@ -18,7 +20,11 @@ class ForDocx:
         #PARAMETROS QUE SE OBTENDRAN DE LA BASE DE DATOS DEPENDIENDO DE LA PLANTILLA SELECCIONADA
         #params = ['NOMBRE', 'TITULO', 'NUMCONTROL', 'COLONIA', 'CIUDAD', 'TELEFONO']
 
-        self.params = ['NOMBRE']
+        #self.params = ['NOMBRE']
+
+        self.params = []
+        self.params.append(params)
+        
 
         #cambios2
 
