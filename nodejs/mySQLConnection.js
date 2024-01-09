@@ -54,6 +54,19 @@ class Connection{
             })
         }) 
     }
+
+    async getDocumentos(){
+        return new Promise((resolve, reject) =>{
+            this.pool.query('SELECT nombre FROM documentos;', (err, result, fields) => {
+                if(err){
+                    reject(err)
+                }else{
+                    console.log('RESULTADO:' + result)
+                    resolve(result)
+                }
+            })
+        }) 
+    }
 }
 
 

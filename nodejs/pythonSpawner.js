@@ -42,7 +42,7 @@ class PythonSpawner{
         let filePath = path.join(__dirname, resp.substring(0, resp.length-2))
         let hpath = pathToFileURL(filePath)
         //hpath.host = 'localhost'
-        console.log(hpath)
+        //console.log(hpath)
         this.bot.sendDocument(this.chatId, fileURLToPath(hpath))
             .then(()=>{
                 console.log("Successfull")
@@ -57,12 +57,21 @@ class PythonSpawner{
         
         const replyMarkup = {
             keyboard: [
-                ['Opción 1', 'Opción 2'],
-                ['Opción 3', 'Opción 4']
+                ['Opción 1', 'Opcion 2'],
+                ['Opción 3', 'Opcion 4']
             ],
             resize_keyboard: true,
             one_time_keyboard: true
-        };
+        }
+
+        /*const replyMarkup = {
+            inline_keyboard: [
+                [{text: 'Opción 1', callback_data: 'opcion2'}],
+                [{text: 'Opción 3', callback_data: 'opcion4'}]
+            ]
+            //resize_keyboard: true,
+            //one_time_keyboard: true
+        }*/
 
         this.bot.sendMessage(this.chatId, 'Elige', {reply_markup: JSON.stringify(replyMarkup)})
     }

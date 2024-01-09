@@ -111,6 +111,20 @@ bot.on("message", async(msg)=>{
     }else{
       if(msg.text == '/start'){
         modo = 1
+
+        nombres = await dbConfig.getDocumentos()
+
+        lista = nombres.map(doc => doc.nombre)
+
+        struc = lista.map(doc => [{text: doc, callback_data: doc}])
+        
+
+        const replyMarkup = {
+          inline_keyboard: struc
+      }
+
+        bot.sendMessage(chatId, 'Documentos:', {reply_markup: replyMarkup})
+
       }else{
         bot.sendMessage(chatId, 'Para iniciar escriba el comando /start');
       }

@@ -23,9 +23,11 @@ create table esTipo (
 
 insert into tipos (tipo) values ('word'), ('excel'), ('pdf');
 
-insert into documentos (nombre, parametros, ruta) values ('prueba', 'NOMBRE', './../archivos/plantilla.docx');
+insert into documentos (nombre, parametros, ruta) values ('prueba', 'NOMBRE', './../archivos/res_reporte1.docx');
 
 SET @id_documento = LAST_INSERT_ID();
 SET @id_tipo1 = LAST_INSERT_ID();
 
 insert into esTipo (id_documento, id_tipo) values (@id_documento, @id_tipo1);
+
+insert into documentos (nombre, parametros, ruta) values ('prueba2', 'LUGAR', './../archivos/plantilla.docx');
