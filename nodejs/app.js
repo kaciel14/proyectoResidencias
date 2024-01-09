@@ -14,14 +14,15 @@ const token = '6566505922:AAFLnqVIM9Y25rn3xqHtpzZdRtZWsoEBCfU';
 
 const bot = new TelegramBot(token, { polling: true, filepath: true });
 
-
 //Se inicia el servidor. Puerto 3000.
 var app = express();
 app.use(express.json());
 
 app.listen(3000, () => {
-  console.log('Wuu!')
+  console.log('Esperando mensajes...')
 });
+
+let modo = 0
 
 const dbConfig = new Connection(
   'localhost',
@@ -33,7 +34,10 @@ const dbConfig = new Connection(
 
 app.use(myConnection(mysql, dbConfig.pool, 'pool'))
 
+
 bot.onText(/\/echo (.+)/, (msg, match) => {
+
+  if(modo === 0){
     // 'msg' is the received Message from Telegram
     // 'match' is the result of executing the regexp above on the text content
     // of the message
@@ -43,46 +47,76 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
   
     // send back the matched "whatever" to the chat
     bot.sendMessage(chatId, resp);
-  });
+  }
+
+});
+
+bot.onText(/\/start/, async(msg) => {
+
+  const chatId = msg.chat.id;
+
+  if(modo === 0){
+    modo = 1
+  }
+
+});
+
 let count = 0;
 let mensajes = []
 
-const miPromesa = new Promise(async(resolve, reject) =>{
-
-      try{
-        const p =  await dbConfig.getParams()
-        const r =  await dbConfig.getRuta()
-        resolve([p, r])
-        
-      }catch(err){
-        reject(err)
-      }
-    
-})
-
-bot.on("message", (msg)=>{
-  if(mensajes.length == 1){
-
-    const pySpawner = new PythonSpawner(bot, msg.chat.id)
-    const chatId = msg.chat.id;
-
+function miPromesa(){
+  return new Promise(async(resolve, reject) =>{
+      
     try{
-      miPromesa.then((result) => {
-        console.log(result)
-        pySpawner.pythonInput(msg.text, result[0], result[1])
-      })
-
+      const p =  await dbConfig.getParams()
+      const r =  await dbConfig.getRuta()
+      resolve([p, r])
+      
     }catch(err){
-      console.log('Error al esperar resultados1')
+      reject(err)
     }
+  })
+} 
     
-    count = 0
-    mensajes = []
 
-  }else{
+bot.on("message", async(msg)=>{
+
+  const chatId = msg.chat.id;
+
+  if(modo === 1){
     mensajes.push(msg.text)
     count = count +1
-  }
+
+    if(count < 1){
+
+      
+      
+
+    }else{
+      
+      const pySpawner = new PythonSpawner(bot, msg.chat.id)
+
+      try{
+        const result = await miPromesa()
+        pySpawner.pythonInput(msg.text, result[0], result[1])
+
+
+      }catch(err){
+        console.log('Error al esperar resultados1')
+      }
+      
+      count = 0
+      mensajes = []
+    }
+    }else{
+      if(msg.text == '/start'){
+        modo = 1
+      }else{
+        bot.sendMessage(chatId, 'Para iniciar escriba el comando /start');
+      }
+      
+    }
+  
 });
 
 bot.onText(RegExp('message'), (msg) => {
