@@ -73,7 +73,7 @@ class PythonSpawner{
             //one_time_keyboard: true
         }*/
 
-        this.bot.sendMessage(this.chatId, 'Elige', {reply_markup: JSON.stringify(replyMarkup)})
+        //this.bot.sendMessage(this.chatId, 'Elige', {reply_markup: JSON.stringify({remove_keyboard: true})})
     }
 }
 

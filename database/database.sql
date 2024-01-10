@@ -31,3 +31,10 @@ SET @id_tipo1 = LAST_INSERT_ID();
 insert into esTipo (id_documento, id_tipo) values (@id_documento, @id_tipo1);
 
 insert into documentos (nombre, parametros, ruta) values ('prueba2', 'LUGAR', './../archivos/plantilla.docx');
+
+insert into documentos (nombre, parametros, ruta) 
+values 
+('prueba3', 'NOMBRE, LUGAR, FECHA', './../archivos/plantilla.docx'),
+('prueba4', 'FECHA', './../archivos/plantilla.docx'),
+('prueba5', 'NOMBRE', './../archivos/plantilla.docx'),
+('prueba6', 'LUGAR, FECHA', './../archivos/plantilla.docx');

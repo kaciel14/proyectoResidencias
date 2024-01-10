@@ -64,6 +64,9 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
 let count = 0;
 let mensajes = []
 
+let eleInicio = 0
+let eleFin = 4
+
 let defname = ''
 
 function miPromesa(name){
@@ -119,7 +122,8 @@ bot.on("message", async(msg)=>{
 
         nombres = await dbConfig.getDocumentos()
 
-        lista = nombres.map(doc => doc.nombre)
+        lista = nombres.slice(eleInicio, eleFin)
+        lista = lista.map(doc => doc.nombre)
 
         struc = lista.map(doc => [{text: doc, callback_data: doc}])
         
@@ -152,13 +156,52 @@ bot.on('callback_query', async(callbackQuery) => {
   const chatId = callbackQuery.message.chat.id;
   const data = callbackQuery.data;
 
+  let bottom = [{text: 'Anterior', callback_data: 'ant'}, {text: 'Siguiente', callback_data: 'sig'}]
+
   switch(data){
     case 'sig': 
-      lista = nombres.map(doc => doc.nombre)
-      struc = lista.map(doc => [{text: doc, callback_data: doc}])
-      struc.push([{text: 'Anterior', callback_data: 'ant'}, {text: 'Siguiente', callback_data: 'sig'}])
+      eleInicio = eleFin +1
 
-      const replyMarkup = {
+      if(eleFin*2 > nombres.length-1){
+        eleFin = nombres.length
+        bottom = [{text: 'Anterior', callback_data: 'ant'}]
+      }else{
+        eleFin = eleFin *2
+      }
+
+      lista = nombres.slice(eleInicio, eleFin)
+      console.log(lista)
+      lista = lista.map(doc => doc.nombre)
+      struc = lista.map(doc => [{text: doc, callback_data: doc}])
+
+      struc.push(bottom)
+
+      replyMarkup = {
+        inline_keyboard: struc
+      }
+
+      bot.editMessageReplyMarkup(replyMarkup, {chat_id: chatId, message_id: callbackQuery.message.message_id})
+      break;
+    case 'ant':
+
+      eleInicio = eleInicio - 5
+
+      if(eleInicio <= 0){
+        eleInicio = 0
+        eleFin = 4
+        bottom = [{text: 'Siguiente', callback_data: 'sig'}]
+      }else{
+        eleFin = eleInicio + 4
+      }
+
+      lista = nombres.slice(eleInicio, eleFin)
+      console.log(lista)
+      lista = lista.map(doc => doc.nombre)
+      struc = lista.map(doc => [{text: doc, callback_data: doc}])
+
+      struc.push(bottom)
+
+      replyMarkup = {
         inline_keyboard: struc
       }
 
