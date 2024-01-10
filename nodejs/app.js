@@ -12,7 +12,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const connection = require('express-myconnection');
 const token = '6566505922:AAFLnqVIM9Y25rn3xqHtpzZdRtZWsoEBCfU';
 
-const bot = new TelegramBot(token, { polling: true, filepath: true });
+const bot = new TelegramBot(token, {polling: {params: {limit: 1, timeout: 100}}, filepath: true });
 
 //Se inicia el servidor. Puerto 3000.
 var app = express();
@@ -51,7 +51,7 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
 
 });
 
-bot.onText(/\/start/, async(msg) => {
+/*bot.onText(/\/start/, async(msg) => {
 
   const chatId = msg.chat.id;
 
@@ -59,17 +59,19 @@ bot.onText(/\/start/, async(msg) => {
     modo = 1
   }
 
-});
+});*/
 
 let count = 0;
 let mensajes = []
 
-function miPromesa(){
+let defname = ''
+
+function miPromesa(name){
   return new Promise(async(resolve, reject) =>{
       
     try{
-      const p =  await dbConfig.getParams()
-      const r =  await dbConfig.getRuta()
+      const p =  await dbConfig.getParams(name)
+      const r =  await dbConfig.getRuta(name)
       resolve([p, r])
       
     }catch(err){
@@ -83,11 +85,15 @@ bot.on("message", async(msg)=>{
 
   const chatId = msg.chat.id;
 
-  if(modo === 1){
+  if(modo === 2){
     mensajes.push(msg.text)
     count = count +1
 
-    if(count < 1){
+    const result = await miPromesa(defname)
+
+    num = result[0].split(', ').length
+
+    if(count < num){
 
       
       
@@ -97,8 +103,7 @@ bot.on("message", async(msg)=>{
       const pySpawner = new PythonSpawner(bot, msg.chat.id)
 
       try{
-        const result = await miPromesa()
-        pySpawner.pythonInput(msg.text, result[0], result[1])
+        pySpawner.pythonInput(mensajes, result[0], result[1])
 
 
       }catch(err){
@@ -118,15 +123,19 @@ bot.on("message", async(msg)=>{
 
         struc = lista.map(doc => [{text: doc, callback_data: doc}])
         
+        struc.push([{text: 'Siguiente', callback_data: 'sig'}])
 
         const replyMarkup = {
           inline_keyboard: struc
-      }
+        }
 
         bot.sendMessage(chatId, 'Documentos:', {reply_markup: replyMarkup})
 
       }else{
-        bot.sendMessage(chatId, 'Para iniciar escriba el comando /start');
+        if(modo === 0)
+          bot.sendMessage(chatId, 'Para iniciar escriba el comando /start');
+        else
+          bot.sendMessage(chatId, 'Por favor selecciona un documento de la lista');
       }
       
     }
@@ -138,3 +147,29 @@ bot.onText(RegExp('message'), (msg) => {
     //console.log(msg.chat.id);
 });
   
+
+bot.on('callback_query', async(callbackQuery) => {
+  const chatId = callbackQuery.message.chat.id;
+  const data = callbackQuery.data;
+
+  switch(data){
+    case 'sig': 
+      lista = nombres.map(doc => doc.nombre)
+      struc = lista.map(doc => [{text: doc, callback_data: doc}])
+      struc.push([{text: 'Anterior', callback_data: 'ant'}, {text: 'Siguiente', callback_data: 'sig'}])
+
+      const replyMarkup = {
+        inline_keyboard: struc
+      }
+
+      bot.editMessageReplyMarkup(replyMarkup, {chat_id: chatId, message_id: callbackQuery.message.message_id})
+      break;
+    default: params = await miPromesa(data)
+      defname = data
+  
+      bot.sendMessage(chatId, 'Debe ingresar por mensajes separados los siguientes parametros en el siguiente orden: ' + params[0]);
+  
+      modo = 2; break;
+  }
+
+})

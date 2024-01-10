@@ -23,7 +23,12 @@ class ForDocx:
         #self.params = ['NOMBRE']
 
         self.params = []
-        self.params.append(params)
+
+        params = params.split(', ')
+        
+        self.params = params
+
+        #self.params.append(params)
         
 
         #cambios2
@@ -33,7 +38,10 @@ class ForDocx:
         #inputs = ['Kaciel Alejandro Benitez Ferral', 'PRIMER REPORTE', '19071482', 'Col. Los Mangos', 'Tampico, Tamaulipas', '833-357-48-20']
 
         #inputs = []
-        self.inputs = [data]
+
+        data = data.split(',')
+
+        self.inputs = data
 
         text = self.document.paragraphs
 

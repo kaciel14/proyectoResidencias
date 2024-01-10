@@ -6,7 +6,7 @@ const { fileURLToPath, pathToFileURL } = require('url')
 
 //pythonResponse = ""
 
-//const resp = msg.text;
+//const resp = msgs.text;
 
 class PythonSpawner{
 
@@ -27,10 +27,10 @@ class PythonSpawner{
         })
     }
 
-    pythonInput(msgText, params, ruta){
+    pythonInput(msgs, params, ruta){
 
-        console.log(msgText + " " + params + " " + ruta)
-        this.pythonProcess.stdin.write(msgText+'='+params+"="+ruta)
+        console.log(msgs + " " + params + " " + ruta)
+        this.pythonProcess.stdin.write(msgs+'='+params+"="+ruta)
         this.pythonProcess.stdin.end()
         
     }
@@ -38,7 +38,7 @@ class PythonSpawner{
     pythonOutput(){
         console.log(this.pythonResponse)
         const resp = this.pythonResponse
-        //this.bot.sendMessage(this.chatId, this.pythonResponse)  
+        //this.bot.sendMessage(this.chatId, this.pythonResponse)
         let filePath = path.join(__dirname, resp.substring(0, resp.length-2))
         let hpath = pathToFileURL(filePath)
         //hpath.host = 'localhost'

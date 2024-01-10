@@ -28,9 +28,9 @@ class Connection{
         return this.pool.getConnection();
     }
 
-    async getParams(){
+    async getParams(name){
         return new Promise((resolve, reject) =>{
-            this.pool.query('SELECT parametros FROM documentos WHERE id = 1;', (err, result, fields) => {
+            this.pool.query('SELECT parametros FROM documentos WHERE nombre = ?;', [name], (err, result, fields) => {
                 if(err){
                     reject(err)
                 }else{
@@ -42,9 +42,9 @@ class Connection{
         
     }
 
-    async getRuta(){
+    async getRuta(name){
         return new Promise((resolve, reject) =>{
-            this.pool.query('SELECT ruta FROM documentos WHERE id = 1;', (err, result, fields) => {
+            this.pool.query('SELECT ruta FROM documentos WHERE nombre = ?;', [name], (err, result, fields) => {
                 if(err){
                     reject(err)
                 }else{
