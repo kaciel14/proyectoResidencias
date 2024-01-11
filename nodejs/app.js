@@ -4,6 +4,10 @@ const date = require('date-and-time')
 const myConnection = require('express-myconnection')
 const mysql = require('mysql')
 
+const path = require('path')
+const fs = require('fs')
+const { fileURLToPath, pathToFileURL } = require('url')
+
 const PythonSpawner = require('./pythonSpawner')
 const Connection = require('./mySQLConnection')
 
@@ -65,7 +69,7 @@ let count = 0;
 let mensajes = []
 
 let eleInicio = 0
-let eleFin = 4
+let eleFin = 5
 
 let defname = ''
 
@@ -85,6 +89,10 @@ function miPromesa(name){
     
 
 bot.on("message", async(msg)=>{
+
+  if(msg.document){
+    return;
+  }
 
   const chatId = msg.chat.id;
 
@@ -107,7 +115,7 @@ bot.on("message", async(msg)=>{
 
       try{
         pySpawner.pythonInput(mensajes, result[0], result[1])
-
+        modo = 1
 
       }catch(err){
         console.log('Error al esperar resultados1')
@@ -116,18 +124,29 @@ bot.on("message", async(msg)=>{
       count = 0
       mensajes = []
     }
-    }else{
+    }else if(modo === 5){
+
+      await dbConfig.updateParametros(msg.text.toUpperCase())
+
+      bot.sendMessage(chatId, 'Documento agregado correctamente, parametros: '+ msg.text.toUpperCase())
+      modo = 1
+
+    }
+    else{
       if(msg.text == '/start'){
         modo = 1
 
         nombres = await dbConfig.getDocumentos()
 
+
+        eleInicio = 0
+        eleFin = 5
         lista = nombres.slice(eleInicio, eleFin)
         lista = lista.map(doc => doc.nombre)
 
         struc = lista.map(doc => [{text: doc, callback_data: doc}])
         
-        struc.push([{text: 'Siguiente', callback_data: 'sig'}])
+        struc.push([{text: 'Siguiente ▶', callback_data: 'sig'}])
 
         const replyMarkup = {
           inline_keyboard: struc
@@ -139,12 +158,12 @@ bot.on("message", async(msg)=>{
         if(modo === 0)
           bot.sendMessage(chatId, 'Para iniciar escriba el comando /start');
         else
-          bot.sendMessage(chatId, 'Por favor selecciona un documento de la lista');
+          (modo != 5) ? bot.sendMessage(chatId, 'Por favor selecciona un documento de la lista') : console.log('Esperando parametros');
       }
       
     }
   
-});
+}, );
 
 bot.onText(RegExp('message'), (msg) => {
     //console.log(msg);
@@ -156,63 +175,100 @@ bot.on('callback_query', async(callbackQuery) => {
   const chatId = callbackQuery.message.chat.id;
   const data = callbackQuery.data;
 
-  let bottom = [{text: 'Anterior', callback_data: 'ant'}, {text: 'Siguiente', callback_data: 'sig'}]
+  let bottom = [{text: '◀ Anterior', callback_data: 'ant'}, {text: 'Siguiente ▶', callback_data: 'sig'}]
 
-  switch(data){
-    case 'sig': 
-      eleInicio = eleFin +1
-
-      if(eleFin*2 > nombres.length-1){
-        eleFin = nombres.length
-        bottom = [{text: 'Anterior', callback_data: 'ant'}]
-      }else{
-        eleFin = eleFin *2
-      }
-
-      lista = nombres.slice(eleInicio, eleFin)
-      console.log(lista)
-      lista = lista.map(doc => doc.nombre)
-      struc = lista.map(doc => [{text: doc, callback_data: doc}])
-
-      struc.push(bottom)
-
-      replyMarkup = {
-        inline_keyboard: struc
-      }
-
-      bot.editMessageReplyMarkup(replyMarkup, {chat_id: chatId, message_id: callbackQuery.message.message_id})
-      break;
-    case 'ant':
-
-      eleInicio = eleInicio - 5
-
-      if(eleInicio <= 0){
-        eleInicio = 0
-        eleFin = 4
-        bottom = [{text: 'Siguiente', callback_data: 'sig'}]
-      }else{
-        eleFin = eleInicio + 4
-      }
-
-      lista = nombres.slice(eleInicio, eleFin)
-      console.log(lista)
-      lista = lista.map(doc => doc.nombre)
-      struc = lista.map(doc => [{text: doc, callback_data: doc}])
-
-      struc.push(bottom)
-
-      replyMarkup = {
-        inline_keyboard: struc
-      }
-
-      bot.editMessageReplyMarkup(replyMarkup, {chat_id: chatId, message_id: callbackQuery.message.message_id})
-      break;
-    default: params = await miPromesa(data)
-      defname = data
+  if(modo > 0){
+    switch(data){
+      case 'sig': 
+        eleInicio = eleFin 
   
-      bot.sendMessage(chatId, 'Debe ingresar por mensajes separados los siguientes parametros en el siguiente orden: ' + params[0]);
+        if(eleFin*2 > nombres.length-1){
+          eleFin = nombres.length
+          bottom = [{text: '◀ Anterior', callback_data: 'ant'}]
+        }else{
+          eleFin = eleFin *2
+        }
   
-      modo = 2; break;
+        lista = nombres.slice(eleInicio, eleFin)
+        console.log(lista)
+        lista = lista.map(doc => doc.nombre)
+        struc = lista.map(doc => [{text: doc, callback_data: doc}])
+  
+        struc.push(bottom)
+  
+        replyMarkup = {
+          inline_keyboard: struc
+        }
+  
+        bot.editMessageReplyMarkup(replyMarkup, {chat_id: chatId, message_id: callbackQuery.message.message_id})
+        break;
+      case 'ant':
+  
+        eleInicio = eleInicio - 5
+  
+        if(eleInicio <= 0){
+          eleInicio = 0
+          eleFin = 5
+          bottom = [{text: 'Siguiente ▶', callback_data: 'sig'}]
+        }else{
+          eleFin = eleInicio + 5
+        }
+  
+        lista = nombres.slice(eleInicio, eleFin)
+        console.log(lista)
+        lista = lista.map(doc => doc.nombre)
+        struc = lista.map(doc => [{text: doc, callback_data: doc}])
+  
+        struc.push(bottom)
+  
+        replyMarkup = {
+          inline_keyboard: struc
+        }
+  
+        bot.editMessageReplyMarkup(replyMarkup, {chat_id: chatId, message_id: callbackQuery.message.message_id})
+        break;
+  
+      case 'preview':
+  
+        defRuta = await miPromesa(defname)
+        bot.sendDocument(chatId, defRuta[1])
+        
+        break;
+      default: params = await miPromesa(data)
+        defname = data
+  
+        replyMarkup = {
+          inline_keyboard: [
+            [{text: 'Vista previa del documento', callback_data: 'preview'}]
+          ]
+        }
+    
+        bot.sendMessage(chatId, 'Debe ingresar por mensajes separados los siguientes parametros en el siguiente orden: ' + params[0], {reply_markup: JSON.stringify(replyMarkup)});
+    
+        modo = 2; break;
+    }
   }
 
+})
+
+bot.on("document", async(msg) => {
+  const chatId = msg.chat.id
+  const docId = msg.document.file_id
+
+  const fileInfo = await bot.getFile(docId)
+  const fileLink = await bot.getFileLink(docId)
+
+  const filePath = './../archivos/'
+
+  //console.log(filePath2)
+  const filePath2 = await bot.downloadFile(docId, filePath)
+
+  fs.renameSync(filePath2, filePath + msg.document.file_name)
+
+  res = await dbConfig.newDocument(msg.document.file_name, filePath + msg.document.file_name)
+
+  bot.sendMessage(chatId, "Creando documento...\nPor favor escribe los parametros del documento.\nRecuerda separarlos por comas.")
+
+  console.log(res)
+  modo = 5
 })

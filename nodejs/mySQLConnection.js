@@ -67,6 +67,32 @@ class Connection{
             })
         }) 
     }
+
+    async newDocument(nombre, ruta){
+        return new Promise((resolve, reject) =>{
+            this.pool.query('INSERT INTO documentos (nombre, ruta) VALUES (?, ?);',[nombre, ruta] ,(err, result, fields) => {
+                if(err){
+                    reject(err)
+                }else{
+                    console.log('RESULTADO:' + result)
+                    resolve(result)
+                }
+            })
+        }) 
+    }
+
+    async updateParametros(parametros){
+        return new Promise((resolve, reject) =>{
+            this.pool.query('UPDATE documentos SET parametros = ? WHERE id = LAST_INSERT_ID();',[parametros] ,(err, result, fields) => {
+                if(err){
+                    reject(err)
+                }else{
+                    console.log('RESULTADO:' + result)
+                    resolve(result)
+                }
+            })
+        })
+    }
 }
 
 

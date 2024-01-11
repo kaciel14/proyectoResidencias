@@ -16,7 +16,7 @@ class PythonSpawner{
         this.bot = bot
         this.chatId = chatId
 
-        this.pythonProcess = spawn("python", ["./../python/controller.py"])
+        this.pythonProcess = spawn("python", ["./../python/controller.py"], {encoding: 'utf-8'})
 
         this.pythonProcess.stdout.on("data", (data) => {
             this.pythonResponse += data.toString()
@@ -30,7 +30,7 @@ class PythonSpawner{
     pythonInput(msgs, params, ruta){
 
         console.log(msgs + " " + params + " " + ruta)
-        this.pythonProcess.stdin.write(msgs+'='+params+"="+ruta)
+        this.pythonProcess.stdin.write(msgs+'='+params+'='+ruta)
         this.pythonProcess.stdin.end()
         
     }
