@@ -52,12 +52,12 @@ class ForDocx:
         for para in text:
             for param, input in zip(self.params, self.inputs):
                 #print(param)
-                if('[['+ param +']]' in para.text):
+                if('['+ param +']' in para.text):
                     
                     for run in para.runs:
-                        if '[[' + param + ']]' in run.text:
+                        if '[' + param + ']' in run.text:
                             #print('A: ' + run.text)
-                            run.text = run.text.replace('[['+ param +']]', input)
+                            run.text = run.text.replace('['+ param +']', input)
                         #else:
                             #print('B: '+run.text)        
                     

@@ -158,7 +158,7 @@ bot.on("message", async(msg)=>{
         if(modo === 0)
           bot.sendMessage(chatId, 'Para iniciar escriba el comando /start');
         else
-          (modo != 5) ? bot.sendMessage(chatId, 'Por favor selecciona un documento de la lista') : console.log('Esperando parametros');
+          (modo != 5) ? bot.sendMessage(chatId, 'Por favor selecciona un documento de la lista o use el comando /start para volver a ver la lista') : console.log('Esperando parametros');
       }
       
     }

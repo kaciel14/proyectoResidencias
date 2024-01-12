@@ -69,13 +69,30 @@ class Connection{
     }
 
     async newDocument(nombre, ruta){
+        let tipo = nombre.split('.')
+        tipo = tipo[tipo.length-1]
         return new Promise((resolve, reject) =>{
             this.pool.query('INSERT INTO documentos (nombre, ruta) VALUES (?, ?);',[nombre, ruta] ,(err, result, fields) => {
                 if(err){
                     reject(err)
                 }else{
-                    console.log('RESULTADO:' + result)
-                    resolve(result)
+
+                    switch(tipo){
+                        case 'docx': tipo = 1
+                            break;
+                        case 'xlsx': tipo = 2
+                            break;
+                        case 'pdf': tipo = 3
+                            break;
+                    }
+
+                    this.pool.query('INSERT INTO esTipo (id_documento, id_tipo) VALUES (LAST_INSERT_ID(), ?)', [tipo], (err, result, fields) => {
+                        if(err){
+                            reject(err)
+                        }else{
+                            resolve(result)
+                        }
+                    })
                 }
             })
         }) 
@@ -87,7 +104,6 @@ class Connection{
                 if(err){
                     reject(err)
                 }else{
-                    console.log('RESULTADO:' + result)
                     resolve(result)
                 }
             })
