@@ -16,7 +16,7 @@ class PythonSpawner{
         this.bot = bot
         this.chatId = chatId
 
-        this.pythonProcess = spawn("python", ["./../python/controller.py"], {encoding: 'utf-8'})
+        this.pythonProcess = spawn("py", ["./../python/controller.py"], {encoding: 'utf-8'})
 
         this.pythonProcess.stdout.on("data", (data) => {
             console.log("SCRIPT SAYS: " + data.toString())
