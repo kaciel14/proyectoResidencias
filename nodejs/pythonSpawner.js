@@ -16,18 +16,22 @@ class PythonSpawner{
         this.bot = bot
         this.chatId = chatId
 
+        //Invocar una terminal con el comando py para el script controller.py
         this.pythonProcess = spawn("py", ["./../python/controller.py"], {encoding: 'utf-8'})
 
+        //Cuando el script imprime informacion, este metodo recoge esos datos
         this.pythonProcess.stdout.on("data", (data) => {
             console.log("SCRIPT SAYS: " + data.toString())
             this.pythonResponse = data.toString()
         })
         
+        //Al finalizar el script:
         this.pythonProcess.stdout.on("end", () =>  {
             this.pythonOutput()
         })
     }
 
+    //Metodo para darle datos de entrada al script
     pythonInput(msgs, params, ruta){
 
         console.log(msgs + " " + params + " " + ruta)
@@ -36,6 +40,7 @@ class PythonSpawner{
         
     }
 
+    //Metodo para enviar el documento generado por el script
     pythonOutput(){
         console.log(this.pythonResponse)
         const resp = this.pythonResponse
@@ -63,16 +68,6 @@ class PythonSpawner{
             one_time_keyboard: true
         }
 
-        /*const replyMarkup = {
-            inline_keyboard: [
-                [{text: 'Opción 1', callback_data: 'opcion2'}],
-                [{text: 'Opción 3', callback_data: 'opcion4'}]
-            ]
-            //resize_keyboard: true,
-            //one_time_keyboard: true
-        }*/
-
-        //this.bot.sendMessage(this.chatId, 'Elige', {reply_markup: JSON.stringify({remove_keyboard: true})})
     }
 }
 

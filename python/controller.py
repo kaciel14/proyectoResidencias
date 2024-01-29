@@ -1,6 +1,8 @@
 import sys
 from fordocx import ForDocx
 
+#Esta clase debe dedicarse a manejar los tipos de archivos y asignar el script adecuado según su tipo
+
 class Controller:
 
     def __init__(self, data):

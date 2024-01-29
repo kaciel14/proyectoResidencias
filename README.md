@@ -2,6 +2,8 @@ PROYECTO
 
 verión de NODE.js: 18.16.0
 
-librerías python: 
+MODULOS NODE:
+    -express@4.18.2
 
--python-docx
+librerías python: 
+    -python-docx

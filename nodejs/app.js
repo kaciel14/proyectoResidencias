@@ -1,10 +1,8 @@
 //Paquete para crear un servidor.
 var express = require('express');
-const date = require('date-and-time')
 const myConnection = require('express-myconnection')
 const mysql = require('mysql')
 
-const path = require('path')
 const fs = require('fs')
 
 const PythonSpawner = require('./pythonSpawner')
@@ -24,8 +22,10 @@ app.listen(3000, () => {
   console.log('Esperando mensajes...')
 });
 
-let modo = 0
+//Variable para controlar el flujo de la interaccion con el bot
+let step = 0
 
+//Configuracion de la base de datos (host, usuario, contraseña, nombre de la DB y puerto)
 const dbConfig = new Connection(
   'localhost',
   'kaciel',
@@ -36,15 +36,18 @@ const dbConfig = new Connection(
 
 app.use(myConnection(mysql, dbConfig.pool, 'pool'))
 
-
+//Variables para almacenar varios mensajes antes de procesarlos
 let count = 0;
 let mensajes = []
 
+//Indices para moverse en la lista de documentos
 let listaInicio = 0
 let listaFin = 5
 
+//Variable que toma nombre cuando el usuario elije un documento de la lista (RECORDATORIO: CAMBIAR A ID EN LUGAR DE NOMBRE)
 let documentName = ''
 
+//Funcion que detiene el flujo del sistema hasta obtener respuesta de la consulta a la base de datos (parametros y ruta del documento seleccionado)
 function getDocumentData(name){
   return new Promise(async(resolve, reject) =>{
       
@@ -59,7 +62,7 @@ function getDocumentData(name){
   })
 } 
     
-
+//Funcion asincrona que se ejecuta al recibir un mensaje
 bot.on("message", async(msg)=>{
 
   if(msg.document){
@@ -68,7 +71,8 @@ bot.on("message", async(msg)=>{
 
   const chatId = msg.chat.id;
 
-  if(modo === 2){
+  //Step 2: Espera a recibir n mensajes para n parametros y pasarle los mensajes al script de python para insertarlos en el documento
+  if(step === 2){
     mensajes.push(msg.text)
     count = count +1
 
@@ -84,8 +88,9 @@ bot.on("message", async(msg)=>{
       const pySpawner = new PythonSpawner(bot, msg.chat.id)
 
       try{
+        //Pasar los mensajes al script de python para que cree un nuevo documento con ellos
         pySpawner.pythonInput(mensajes, documentData[0], documentData[1])
-        modo = 1
+        step = 1
 
       }catch(err){
         console.log('Error al esperar resultados')
@@ -94,18 +99,21 @@ bot.on("message", async(msg)=>{
       count = 0
       mensajes = []
     }
-    }else if(modo === 5){
+    //STEP 5: Se está en el proceso de insercion de un nuevo documento a la base de datos
+    }else if(step === 5){
 
+      //Se agregan los parametros del documento a la base de datos
       await dbConfig.updateParametros(msg.text.toUpperCase())
 
       bot.sendMessage(chatId, 'Documento agregado correctamente, parametros: '+ msg.text.toUpperCase())
-      modo = 1
+      step = 1
 
     }
     else{
       if(msg.text == '/start'){
-        modo = 1
+        step = 1
 
+        //Se obtiene la lista de documento de la base de datos
         nombres = await dbConfig.getDocumentos()
 
 
@@ -114,8 +122,9 @@ bot.on("message", async(msg)=>{
         lista = nombres.slice(listaInicio, listaFin)
         lista = lista.map(doc => doc.nombre)
 
+        //Se crea un botón por cada elemento de la lista
         struc = lista.map(doc => [{text: doc, callback_data: doc}])
-        
+        //Se agrega el boton para avanzar en la lista ya que al inicio solo se nos muestran los primeros 5
         struc.push([{text: 'Siguiente ▶', callback_data: 'sig'}])
 
         const replyMarkup = {
@@ -125,25 +134,26 @@ bot.on("message", async(msg)=>{
         bot.sendMessage(chatId, 'Documentos:', {reply_markup: replyMarkup})
 
       }else{
-        if(modo === 0)
+        if(step === 0)
           bot.sendMessage(chatId, 'Para iniciar escriba el comando /start');
         else
-          (modo != 5) ? bot.sendMessage(chatId, 'Por favor selecciona un documento de la lista o use el comando /start para volver a ver la lista') : console.log('Esperando parametros');
+          (step != 5) ? bot.sendMessage(chatId, 'Por favor selecciona un documento de la lista o use el comando /start para volver a ver la lista') : console.log('Esperando parametros');
       }
       
     }
   
 }, );
 
-
+//Este metodo recibe la informacion del boton que se pulsa en la lista de documentos
 bot.on('callback_query', async(callbackQuery) => {
   const chatId = callbackQuery.message.chat.id;
   const data = callbackQuery.data;
 
   let bottom = [{text: '◀ Anterior', callback_data: 'ant'}, {text: 'Siguiente ▶', callback_data: 'sig'}]
 
-  if(modo > 0){
+  if(step > 0){
     switch(data){
+      //En caso de avanzar en la lista:
       case 'sig': 
         listaInicio = listaFin 
   
@@ -167,6 +177,7 @@ bot.on('callback_query', async(callbackQuery) => {
   
         bot.editMessageReplyMarkup(replyMarkup, {chat_id: chatId, message_id: callbackQuery.message.message_id})
         break;
+      //En caso de retroceder en la lista:
       case 'ant':
   
         listaInicio = listaInicio - 5
@@ -192,16 +203,15 @@ bot.on('callback_query', async(callbackQuery) => {
   
         bot.editMessageReplyMarkup(replyMarkup, {chat_id: chatId, message_id: callbackQuery.message.message_id})
         break;
-  
+      //En caso de querer ver una vista previa del documento que se quiere editar:
       case 'preview':
   
-        defRuta = await getDocumentData
-      (documentName)
+        defRuta = await getDocumentData(documentName)
         bot.sendDocument(chatId, defRuta[1])
         
         break;
-      default: params = await getDocumentData
-    (data)
+      //Por defecto se considera que el usuario seleccionó un documento de la lista:
+      default: params = await getDocumentData(data)
         documentName = data
   
         replyMarkup = {
@@ -209,15 +219,16 @@ bot.on('callback_query', async(callbackQuery) => {
             [{text: 'Vista previa del documento', callback_data: 'preview'}]
           ]
         }
-    
+        //Mensaje para indicar que se pasó al STEP 2, y ahora se deben escribir n mensajes que corresponden a los n parametros del documento
         bot.sendMessage(chatId, 'Debe ingresar por mensajes separados los siguientes parametros en el siguiente orden: ' + params[0], {reply_markup: JSON.stringify(replyMarkup)});
     
-        modo = 2; break;
+        step = 2; break;
     }
   }
 
 })
 
+//Metodo que se ejecuta al recibir un documento, enfocado en insertarlo en la base de datos y guardar el archivo en una ruta especifica, conservando su nombre original 
 bot.on("document", async(msg) => {
   const chatId = msg.chat.id
   const docId = msg.document.file_id
@@ -234,5 +245,5 @@ bot.on("document", async(msg) => {
   bot.sendMessage(chatId, "Creando documento...\nPor favor escribe los parametros del documento.\nRecuerda separarlos por comas.")
 
   console.log(res)
-  modo = 5
+  step = 5
 })

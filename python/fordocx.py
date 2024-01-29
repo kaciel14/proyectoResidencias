@@ -5,11 +5,13 @@ class ForDocx:
 
     def __init__(self, data, params, ruta):
 
+        #El nombre del nuevo archivo generado se da por la hora actual
         now = datetime.now()
         self.rutaOut = './../archivos/' + str(now.time()).replace(':', '-') + '.docx'
 
         self.rutaIn = ruta.strip()
 
+        #Guardar el documento antes de trabajar con el para asegurar la codificación adecuada (UTF-8)
         self.document = Document(self.rutaIn)
 
         self.document.save(self.rutaIn)
@@ -40,8 +42,8 @@ class ForDocx:
 
         self.inputs = data
 
-        text = self.document.paragraphs
-                            
+
+        text = self.document.paragraphs                   
         tables = self.document.tables
 
 

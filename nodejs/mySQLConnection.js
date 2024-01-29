@@ -13,15 +13,6 @@ class Connection{
             queueLimit: 0
         })
 
-        
-        /*this.pool.connect((err) => {
-            if(err){
-                console.log('ERROR AL CONECTAR LA BASE DE DATOS', err)
-            }else{
-                console.log('CONEXION A LA BASE DE DATOS EXITOSA')
-            }
-        })*/
-
     }
 
     async getConnection() {
