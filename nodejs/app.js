@@ -6,14 +6,12 @@ const mysql = require('mysql')
 
 const path = require('path')
 const fs = require('fs')
-const { fileURLToPath, pathToFileURL } = require('url')
 
 const PythonSpawner = require('./pythonSpawner')
 const Connection = require('./mySQLConnection')
 
 //Crear bot con el token
 const TelegramBot = require('node-telegram-bot-api');
-const connection = require('express-myconnection');
 const token = '6566505922:AAFLnqVIM9Y25rn3xqHtpzZdRtZWsoEBCfU';
 
 const bot = new TelegramBot(token, {polling: {params: {limit: 1, timeout: 100}}, filepath: true });
@@ -39,47 +37,21 @@ const dbConfig = new Connection(
 app.use(myConnection(mysql, dbConfig.pool, 'pool'))
 
 
-bot.onText(/\/echo (.+)/, (msg, match) => {
-
-  if(modo === 0){
-    // 'msg' is the received Message from Telegram
-    // 'match' is the result of executing the regexp above on the text content
-    // of the message
-  
-    const chatId = msg.chat.id;
-    const resp = match[1]; // the captured "whatever"
-  
-    // send back the matched "whatever" to the chat
-    bot.sendMessage(chatId, resp);
-  }
-
-});
-
-/*bot.onText(/\/start/, async(msg) => {
-
-  const chatId = msg.chat.id;
-
-  if(modo === 0){
-    modo = 1
-  }
-
-});*/
-
 let count = 0;
 let mensajes = []
 
-let eleInicio = 0
-let eleFin = 5
+let listaInicio = 0
+let listaFin = 5
 
-let defname = ''
+let documentName = ''
 
-function miPromesa(name){
+function getDocumentData(name){
   return new Promise(async(resolve, reject) =>{
       
     try{
-      const p =  await dbConfig.getParams(name)
-      const r =  await dbConfig.getRuta(name)
-      resolve([p, r])
+      const paramsResult =  await dbConfig.getParams(name)
+      const routeResult =  await dbConfig.getRuta(name)
+      resolve([paramsResult, routeResult])
       
     }catch(err){
       reject(err)
@@ -100,13 +72,11 @@ bot.on("message", async(msg)=>{
     mensajes.push(msg.text)
     count = count +1
 
-    const result = await miPromesa(defname)
+    const documentData = await getDocumentData(documentName)
 
-    num = result[0].split(', ').length
+    paramsNum = documentData[0].split(', ').length
 
-    if(count < num){
-
-      
+    if(count < paramsNum){
       
 
     }else{
@@ -114,11 +84,11 @@ bot.on("message", async(msg)=>{
       const pySpawner = new PythonSpawner(bot, msg.chat.id)
 
       try{
-        pySpawner.pythonInput(mensajes, result[0], result[1])
+        pySpawner.pythonInput(mensajes, documentData[0], documentData[1])
         modo = 1
 
       }catch(err){
-        console.log('Error al esperar resultados1')
+        console.log('Error al esperar resultados')
       }
       
       count = 0
@@ -139,9 +109,9 @@ bot.on("message", async(msg)=>{
         nombres = await dbConfig.getDocumentos()
 
 
-        eleInicio = 0
-        eleFin = 5
-        lista = nombres.slice(eleInicio, eleFin)
+        listaInicio = 0
+        listaFin = 5
+        lista = nombres.slice(listaInicio, listaFin)
         lista = lista.map(doc => doc.nombre)
 
         struc = lista.map(doc => [{text: doc, callback_data: doc}])
@@ -165,11 +135,6 @@ bot.on("message", async(msg)=>{
   
 }, );
 
-bot.onText(RegExp('message'), (msg) => {
-    //console.log(msg);
-    //console.log(msg.chat.id);
-});
-  
 
 bot.on('callback_query', async(callbackQuery) => {
   const chatId = callbackQuery.message.chat.id;
@@ -180,16 +145,16 @@ bot.on('callback_query', async(callbackQuery) => {
   if(modo > 0){
     switch(data){
       case 'sig': 
-        eleInicio = eleFin 
+        listaInicio = listaFin 
   
-        if(eleFin*2 > nombres.length-1){
-          eleFin = nombres.length
+        if(listaFin*2 > nombres.length-1){
+          listaFin = nombres.length
           bottom = [{text: '◀ Anterior', callback_data: 'ant'}]
         }else{
-          eleFin = eleFin *2
+          listaFin = listaFin *2
         }
   
-        lista = nombres.slice(eleInicio, eleFin)
+        lista = nombres.slice(listaInicio, listaFin)
         console.log(lista)
         lista = lista.map(doc => doc.nombre)
         struc = lista.map(doc => [{text: doc, callback_data: doc}])
@@ -204,17 +169,17 @@ bot.on('callback_query', async(callbackQuery) => {
         break;
       case 'ant':
   
-        eleInicio = eleInicio - 5
+        listaInicio = listaInicio - 5
   
-        if(eleInicio <= 0){
-          eleInicio = 0
-          eleFin = 5
+        if(listaInicio <= 0){
+          listaInicio = 0
+          listaFin = 5
           bottom = [{text: 'Siguiente ▶', callback_data: 'sig'}]
         }else{
-          eleFin = eleInicio + 5
+          listaFin = listaInicio + 5
         }
   
-        lista = nombres.slice(eleInicio, eleFin)
+        lista = nombres.slice(listaInicio, listaFin)
         console.log(lista)
         lista = lista.map(doc => doc.nombre)
         struc = lista.map(doc => [{text: doc, callback_data: doc}])
@@ -230,12 +195,14 @@ bot.on('callback_query', async(callbackQuery) => {
   
       case 'preview':
   
-        defRuta = await miPromesa(defname)
+        defRuta = await getDocumentData
+      (documentName)
         bot.sendDocument(chatId, defRuta[1])
         
         break;
-      default: params = await miPromesa(data)
-        defname = data
+      default: params = await getDocumentData
+    (data)
+        documentName = data
   
         replyMarkup = {
           inline_keyboard: [
@@ -254,9 +221,6 @@ bot.on('callback_query', async(callbackQuery) => {
 bot.on("document", async(msg) => {
   const chatId = msg.chat.id
   const docId = msg.document.file_id
-
-  const fileInfo = await bot.getFile(docId)
-  const fileLink = await bot.getFileLink(docId)
 
   const filePath = './../archivos/'
 

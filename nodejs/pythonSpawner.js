@@ -19,7 +19,8 @@ class PythonSpawner{
         this.pythonProcess = spawn("python", ["./../python/controller.py"], {encoding: 'utf-8'})
 
         this.pythonProcess.stdout.on("data", (data) => {
-            this.pythonResponse += data.toString()
+            console.log("SCRIPT SAYS: " + data.toString())
+            this.pythonResponse = data.toString()
         })
         
         this.pythonProcess.stdout.on("end", () =>  {
@@ -50,8 +51,6 @@ class PythonSpawner{
             .catch(error => {
                 console.error('Error sending document:', error.message);
 
-                // Handle the error as needed
-                // For example, you can send an error message to the user
                 this.bot.sendMessage(this.chatId, 'Error sending document. Please try again.');
             })
         
