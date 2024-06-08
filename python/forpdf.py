@@ -1,7 +1,7 @@
 from pdf2docx import Converter
 
-rutaIn = ' ./../archivos/pdf.pdf'
-rutaOut = ' ./../archivos/pdfToDocx.docx'
+rutaIn = './../archivos/pdf.pdf'
+rutaOut = './../archivos/newDocxFromPDF.docx'
 
 cv = Converter(rutaIn)
 
