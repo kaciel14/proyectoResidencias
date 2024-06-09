@@ -183,8 +183,8 @@ async function handleCallbackQuery(callbackQuery){
 
 }
 
-async function handleDocument(document){
-    const chatId = msg.chat.id
+async function handleDocument(msg){
+  const chatId = msg.chat.id
   const docId = msg.document.file_id
 
   const filePath = './../archivos/'
