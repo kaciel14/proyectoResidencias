@@ -11,5 +11,7 @@ librerías python:
     -python-docx
 
 videos:
-https://youtu.be/6eQdUdIdMic
-https://youtu.be/Fr1ERO5XKW8
+<ul>
+    <li>https://youtu.be/6eQdUdIdMic</li>
+    <li>https://youtu.be/Fr1ERO5XKW8</li>
+</ul>
